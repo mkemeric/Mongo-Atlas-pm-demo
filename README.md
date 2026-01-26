@@ -1,158 +1,107 @@
-# Agentic Predictive Maintenance System
+# Predictive Maintenance AI with RAG & LangGraph
 
-Manufacturers are moving beyond traditional predictive maintenance—it's not just about forecasting failures, but about acting on issues instantly and autonomously. This project demonstrates how agentic AI, orchestrated by LangGraph.js and powered by MongoDB Atlas and AWS Bedrock, enables multi-agent systems that detect problems and coordinate rapid, intelligent responses across the shop floor. 
+A Python-based demonstration of retrieval-augmented generation (RAG) and agentic AI workflows for predictive maintenance scenarios. This project showcases how to build intelligent systems that analyze machine failures, retrieve relevant context from documentation and historical data, and generate comprehensive maintenance reports. 
 
 This demo showcases:
 
-- **Autonomous action:** AI agents diagnose, plan, and execute maintenance tasks in real time, minimizing human intervention and downtime.
-- **Operational agility:** The system adapts to new data, equipment, and workflows, supporting continuous improvement.
-- **Unified, scalable data foundation:** MongoDB makes it easy to build, operate, and evolve agentic AI solutions—handling diverse data, enabling fast search, and supporting real-time decision-making.
+- **Intelligent Retrieval:** RAG system that combines semantic search with LLMs to answer maintenance questions
+- **Agentic Workflows:** LangGraph-based agents that autonomously diagnose failures and generate repair instructions
+- **Multi-Modal Data Integration:** Unified handling of manuals, historical records, interviews, and real-time alerts
+- **Vector Search:** MongoDB Atlas vector search for fast, context-rich semantic similarity matching
 
 ## Architecture
 
-![High Level Architecture](public/img/high-level-architecture.svg)
-
 **How it works:**
 
-1. **Detection:** Agents monitor machine telemetry and logs, triggering alerts on anomalies.
-2. **Diagnosis:** The Failure Agent uses MongoDB’s flexible data model and vector search to rapidly analyze root causes.
-3. **Action:** The Work Order Agent drafts and routes maintenance tasks, leveraging historical data and inventory.
-4. **Optimization:** The Planning Agent schedules work to minimize disruption, using real-time production and staff data.
-
-**Why MongoDB?**
-
-- **Unified data layer:** Handles structured, unstructured, and time series data for all agents and workflows.
-- **Real-time search & retrieval:** Atlas Search and vector search enable fast, context-rich decision-making.
-- **Scalable, adaptable foundation:** Easily extend to new agents, data sources, and operational needs.
-
-This architecture lets manufacturers automate not just prediction, but coordinated action—unlocking the next level of operational excellence.
+1. **Detection:** Process receives machine failure alerts with error codes and diagnostic data.
+2. **Retrieval:** The RAG system queries MongoDB vector indexes to find relevant manuals and historical records.
+3. **Analysis:** The Failure Agent uses LangGraph to orchestrate multi-step analysis with specialized tools.
+4. **Generation:** LLM synthesizes findings into comprehensive incident reports with repair instructions.
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+
-- MongoDB (local or Atlas)
-- AWS Account with Bedrock access
-- AWS CLI installed locally
+- Python 3.8+
+- MongoDB instance (local or MongoDB Atlas)
+- API keys for:
+  - Voyage AI (for embeddings)
+  - OpenAI (for language completion)
+- Jupyter environment or VS Code with Jupyter support
 
 ### Setup
 
-1. **Configure AWS credentials for Bedrock access:**
-   Run one of the following commands to set up your AWS credentials locally:
-
+1. **Clone the repository:**
    ```bash
-   aws configure
+   git clone <repository-url>
+   cd demo-rag-pm
    ```
 
-   Or with SSO (recommended):
-
+2. **Create a virtual environment (recommended):**
    ```bash
-   aws configure sso
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-2. **Install dependencies:**
-
+3. **Install dependencies:**
    ```bash
-   npm install
+   pip install -r requirements.txt
    ```
 
-3. **Set up environment variables:**
-   Copy the example environment file and update it with your credentials:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   Then edit your `.env` file and set the following variables:
-
+4. **Set up environment variables:**
+   Create a `.env` file in the project root with:
    ```env
-   MONGODB_URI="<your-mongodb-uri>"
-   DATABASE_NAME="agentic_predictive_maintenance"
-   AWS_REGION="us-east-1"
-   AWS_PROFILE="default"
-   COMPLETION_MODEL="us.anthropic.claude-haiku-4-5-20251001-v1:0"
-   EMBEDDING_MODEL="cohere.embed-english-v3"
+   MONGODB_URI=<your-mongodb-connection-string>
+   VOYAGE_API_KEY=<your-voyage-ai-api-key>
+   VOYAGE_API_ENDPOINT=https://api.voyageai.com/v1
+   LLM_API_KEY=<your-openai-api-key>
+   LLM_API_ENDPOINT=https://api.openai.com/v1
    ```
 
-4. **Seed the demo database:**
-   To initialize the demo with all required collections, embeddings, and indexes, run:
+5. **Run the notebooks:**
+   - Start with `rag_mongodb_voyage_openai.ipynb` to set up the RAG system and ingest data
+   - Then explore `failure_agent_langgraph.ipynb` to see the agent workflow in action
 
-   ```bash
-   npm run seed
-   ```
+## Data
 
-   This step ensures your database is ready for the demo application.
+The project includes sample datasets in the `data/` folder:
+- `interviews.json` - Historical maintenance interview transcripts
+- `manuals.json` - Equipment technical manuals and documentation
+- `workorders.json` - Historical work order records
+- `inventory.json` - Equipment inventory and specifications
+- `maintenance_staff.json` - Staff expertise and availability data
 
-5. **Start the application:**
-   You can now launch the app in development mode:
+## Tech Stack
 
-   ```bash
-   npm run dev
-   ```
+- **Python 3.x**
+- **MongoDB Atlas** - Document database with vector search
+- **LangGraph** - Agent workflow orchestration
+- **Voyage AI** - Advanced embedding model (v3)
+- **OpenAI API** - Language model completion
+- **Jupyter Notebooks** - Interactive execution and documentation
 
-   Or with Docker:
+## Current Status
 
-   ```bash
-   docker-compose up
-   ```
+✅ **Complete:**
+- RAG pipeline implementation with Voyage AI embeddings
+- MongoDB vector search integration
+- OpenAI-based question answering
+- LangGraph agent framework setup
+- Multi-tool failure diagnosis workflow
+- Data ingestion and embedding pipeline
 
-Open [http://localhost:8080](http://localhost:8080) in your browser to explore the demo.
+🔧 **In Development:**
+- Production deployment configuration
+- Error handling and retry logic
+- Persistent incident report storage
+- Advanced checkpointing for long-running operations
 
-## Personalizing and Extending the Demo
+## Next Steps
 
-This demo is designed to be flexible and extensible. Here are some ways you can tailor it to your needs:
-
-### Production Calendar Customization
-
-- By default, the production calendar is populated with the next 6 months from today.
-- You can manually edit the `production_calendar` collection in MongoDB to adjust tasks and schedules.
-- To auto-populate the calendar, use:
-  ```bash
-  npm run generate_calendar <months>
-  ```
-  Replace `<months>` with the number of months you want to generate. **Note:** This script will remove the previous calendar before creating a new one.
-
-### Adding Documentation, Manuals, or Interviews
-
-- You can add your own documentation, manual chunks, or interview transcripts directly to the relevant collections (`manuals`, `interviews`, etc.).
-- After adding new documents, run:
-  ```bash
-  npm run embed
-  ```
-  This will embed the new content and update the vector indexes for search and retrieval.
-- To customize which fields are embedded or change the embedding field name, edit the configuration in [`scripts/config.js`](scripts/config.js):
-  ```javascript
-  // Example config.js entry
-  const config = [
-    {
-      collection: "manuals",
-      textFields: ["section", "text"],
-      embeddingField: "embedding",
-      indexName: "default",
-      similarity: "cosine",
-      numDimensions: 1024, // This value depends on the embedding model selected
-    },
-    // Add more collections as needed
-  ];
-  export default config;
-  ```
-  - `collection`: The MongoDB collection name.
-  - `textFields`: Array of fields to concatenate and embed.
-  - `embeddingField`: Field name to store the embedding.
-  - `indexName`, `similarity`, `numDimensions`: Vector index settings. **Note:** `numDimensions` should match the output dimension of your selected embedding model.
-
-### Creating New Agents and Tools
-
-- To create a new agent, copy the `test` folder inside `src/agents` and give it a new name.
-- Inside your new agent folder, you can:
-  - Edit `tools.js` to define the agent's tools and capabilities.
-  - Edit `graph.js` to set the system prompt and agent logic.
-- Once your agent is ready, add it to [`src/agents/config.js`](src/agents/config.js) so it appears in the demo.
-- You can test your agent from the Agent Sandbox section of the application.
-
----
-
-Thank you for exploring the Agentic Predictive Maintenance demo! This repository is maintained by MongoDB Industry Solutions. We encourage you to experiment, extend, and adapt the system to your own use cases. If you have questions or feedback, please reach out at industry.solutions@mongodb.com or open an issue.
-
-Enjoy building the future of modern manufacturing!
+To extend this project:
+1. Connect to real MongoDB production instances
+2. Implement persistent storage for incident reports
+3. Add more specialized tools (asset tracking, parts inventory, technician availability)
+4. Create a web API wrapper for the agents
+5. Set up monitoring and logging for production use
+6. Add chat interface for interactive agent queries
