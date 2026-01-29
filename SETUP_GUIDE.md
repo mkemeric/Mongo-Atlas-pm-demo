@@ -1,84 +1,63 @@
-# Setup Guide: MongoDB Atlas RAG with HPE MLIS
+# Setup Guide: MongoDB Atlas RAG with HPE PC AI Jupyter Server
 
-This guide walks you through setting up and running the MongoDB Atlas RAG (Retrieval-Augmented Generation) system with HPE Machine Learning Inference Service (MLIS) and AI Essentials.
+This guide walks you through setting up and running the MongoDB Atlas RAG (Retrieval-Augmented Generation) system on HPE PC AI using a Jupyter Server and notebook.
 
 ## Prerequisites
 
 Before you begin, ensure you have:
 
-- **Python 3.8+** installed
-- **Jupyter Notebook** or **JupyterLab** installed
+- Access to **HPE PC AI** with a Jupyter Server environment
 - Access to **MongoDB Atlas** with Vector Search enabled
 - Access to **HPE MLIS** with deployed models for:
   - Embeddings (e.g., `nvidia/nv-embedqa-e5-v5`)
   - Text completion (e.g., `meta/llama-3.1-8b-instruct`)
 - **MLIS API tokens** for authentication
 
-## Step 1: Clone the Repository
+## Step 1: Access HPE PC AI Jupyter Server
+
+1. Log in to your **HPE PC AI** environment
+2. Navigate to the Jupyter Server interface
+3. Clone or upload the repository to your Jupyter workspace
 
 ```bash
 git clone https://github.com/mkemeric/Mongo-Atlas-pm-demo.git
 cd Mongo-Atlas-pm-demo
 ```
 
-## Step 2: Set Up Python Environment
+## Step 2: Setup Environment Configuration
 
-### Option A: Using venv (Recommended)
+**Note:** You will **NOT** need to create a virtual environment or manually install dependencies. All dependencies are installed directly in the notebook cells.
 
-```bash
-# Create virtual environment
-python3 -m venv venv
+Setup will be accomplished using a `.env` file that will be copied into the environment.
 
-# Activate virtual environment
-# On macOS/Linux:
-source venv/bin/activate
-# On Windows:
-venv\Scripts\activate
-```
+## Step 3: Set Up MongoDB Atlas
 
-### Option B: Using conda
-
-```bash
-conda create -n mongo-rag python=3.10
-conda activate mongo-rag
-```
-
-## Step 3: Install Dependencies
-
-```bash
-pip install python-dotenv pymongo voyageai openai httpx
-```
-
-**Note:** Even though we're using HPE MLIS (OpenAI-compatible), we still install `voyageai` for backward compatibility. The notebook will use the OpenAI client for MLIS.
-
-## Step 4: Set Up MongoDB Atlas
-
-### 4.1 Create MongoDB Atlas Account
+### 3.1 Create MongoDB Atlas Account
 1. Go to [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
 2. Sign up for a free account or log in
 3. Create a new cluster (M0 Free Tier is sufficient for testing)
 
-### 4.2 Configure Database Access
+### 3.2 Configure Database Access
 1. In Atlas, go to **Database Access**
 2. Click **Add New Database User**
 3. Create a username and password (save these!)
 4. Grant **Read and write to any database** privileges
 
-### 4.3 Configure Network Access
+### 3.3 Configure Network Access
 1. Go to **Network Access**
 2. Click **Add IP Address**
 3. For testing: Click **Allow Access from Anywhere** (0.0.0.0/0)
    - **Production:** Restrict to your specific IP addresses
 
-### 4.4 Get Connection String
+### 3.4 Get Connection String
 1. Click **Connect** on your cluster
 2. Choose **Connect your application**
 3. Copy the connection string (looks like: `mongodb+srv://username:password@cluster.mongodb.net/`)
 4. Replace `<password>` with your actual password
 
-## Step 5: Get HPE MLIS Endpoints and API Keys
+## Step 4: Get HPE MLIS Endpoints and API Keys
 
-### 5.1 Identify Your Model Endpoints
+### 4.1 Identify Your Model Endpoints
 
 Your MLIS endpoints will follow this pattern:
 ```
@@ -89,7 +68,7 @@ Example endpoints:
 - Embedding: `https://embedqa-e5-v5.luann-hpe-com-9df0372c.serving.prod.lg-pcai.hou/v1`
 - LLM: `https://llama-3-1-8b-instruct-1.luann-hpe-com-9df0372c.serving.prod.lg-pcai.hou/v1`
 
-### 5.2 Get API Keys/Tokens
+### 4.2 Get API Keys/Tokens
 
 HPE MLIS uses Kubernetes service account tokens for authentication. To get your token:
 
@@ -100,22 +79,19 @@ kubectl get secret <service-account-secret> -n <namespace> -o jsonpath='{.data.t
 
 Or obtain from your MLIS administrator.
 
-### 5.3 Verify Model Names
+### 4.3 Verify Model Names
 
 Confirm the exact model names your MLIS deployment uses:
 - Embedding model (e.g., `nvidia/nv-embedqa-e5-v5`)
 - Completion model (e.g., `meta/llama-3.1-8b-instruct`)
 
-## Step 6: Configure Environment Variables
+## Step 5: Configure Environment Variables
 
-Create a `.env` file in the project root directory:
+Create a `.env` file in your Jupyter workspace directory. This file will be copied into the notebook environment.
 
-```bash
-# Create .env file
-touch .env
-```
+You can create it directly in Jupyter using the text editor, or upload a pre-configured `.env` file.
 
-Edit `.env` with your preferred text editor and add the following:
+Add the following configuration:
 
 ```bash
 # ============================================================================
@@ -167,9 +143,9 @@ DISABLE_SSL_VERIFICATION=true
 | `EMBEDDING_MODEL` | Yes | Model name for embeddings | `nvidia/nv-embedqa-e5-v5` |
 | `DISABLE_SSL_VERIFICATION` | No | Disable SSL for self-signed certs | `true` (dev only) |
 
-## Step 7: Verify Configuration
+## Step 6: Verify Configuration (Optional)
 
-### 7.1 Test Embedding Endpoint
+### 6.1 Test Embedding Endpoint
 
 ```bash
 curl -k -X POST "https://your-embedding-endpoint/v1/embeddings" \
@@ -182,7 +158,7 @@ curl -k -X POST "https://your-embedding-endpoint/v1/embeddings" \
   }'
 ```
 
-### 7.2 Test LLM Endpoint
+### 6.2 Test LLM Endpoint
 
 ```bash
 curl -k -X POST "https://your-llm-endpoint/v1/chat/completions" \
@@ -197,7 +173,7 @@ curl -k -X POST "https://your-llm-endpoint/v1/chat/completions" \
 
 Both should return valid JSON responses (not 404 or authentication errors).
 
-## Step 8: Prepare Data
+## Step 7: Prepare Data
 
 The notebook expects data files in a `data/` directory:
 
@@ -213,27 +189,17 @@ The repository should include:
 
 If these files are missing, the notebook will alert you during execution.
 
-## Step 9: Run the Notebook
+## Step 8: Run the Notebook
 
-### 9.1 Start Jupyter
+### 8.1 Open the Notebook in Jupyter Server
 
-```bash
-# If using Jupyter Notebook
-jupyter notebook
+In your HPE PC AI Jupyter Server interface, navigate to and open: `rag_mongodb_voyage_openai.ipynb`
 
-# If using JupyterLab
-jupyter lab
-```
+### 8.2 Execute Cells Sequentially
 
-### 9.2 Open the Notebook
+**Important:** Run cells in order from top to bottom. All dependencies will be installed automatically within the notebook.
 
-Navigate to and open: `rag_mongodb_voyage_openai.ipynb`
-
-### 9.3 Execute Cells Sequentially
-
-**Important:** Run cells in order from top to bottom.
-
-1. **Cell 1** - Install dependencies
+1. **Cell 1** - Install dependencies (runs `pip install` commands in the notebook)
 2. **Cell 2** - Import libraries and load configuration
    - Verify you see: `✓ Embedding API type: OpenAI-compatible`
    - Verify you see your model names printed
@@ -245,7 +211,7 @@ Navigate to and open: `rag_mongodb_voyage_openai.ipynb`
 8. **Cell 8** - Initialize RAG system
 9. **Cell 9** - Run example queries
 
-### 9.4 Monitor for Errors
+### 8.3 Monitor for Errors
 
 Watch for these common issues:
 
@@ -266,7 +232,7 @@ Watch for these common issues:
 - Set `DISABLE_SSL_VERIFICATION=true` for internal deployments
 - For production, obtain proper SSL certificates
 
-## Step 10: Verify Vector Search
+## Step 9: Verify Vector Search
 
 After running all cells, verify vector search indexes were created:
 
